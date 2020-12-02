@@ -1,1 +1,1 @@
-# scion-peering-coordinator
+# SCION Peering Coordinator
