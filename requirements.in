@@ -1,0 +1,8 @@
+django
+
+# Database adapter for PostgreSQL
+psycopg2-binary
+
+# Task Queue
+redis
+huey
