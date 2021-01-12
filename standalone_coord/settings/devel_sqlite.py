@@ -4,7 +4,7 @@
 from .devel_common import *
 
 
-ALLOWED_HOSTS = ['192.168.244.2']
+ALLOWED_HOSTS = ['localhost', '192.168.244.2']
 
 
 ################
