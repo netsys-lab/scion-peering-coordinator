@@ -3,7 +3,7 @@ SCION Peering Coordinator
 A peering coordination service for SCION ASes. Works as a companion to the
 [SCIONLab coordinator](https://github.com/netsec-ethz/scionlab).
 
-Original implementation as an extension to the SCIONLab coordinator: https://github.com/lschulz/scionlab
+Original implementation as an extension to the SCIONLab coordinator: https://github.com/lschulz/scionlab-ixp
 
 Implementation Status
 ---------------------
