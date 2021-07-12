@@ -1,0 +1,163 @@
+{% extends "peering_coord/base.html" %}
+
+{% block head %}
+{% if user|has_access:asys %}
+<script>
+  function show_secret(pc) {
+    fetch(`{{ asys.asn|url_format_asn }}/${pc}/secret`)
+    .then(response => response.text())
+    .then(secret => document.getElementById(pc + "-secret").innerHTML = secret)
+  }
+  function reset_secret(pc) {
+    if (window.confirm("Disconnect the client and generate a new secret?")) {
+      fetch(`{{ asys.asn|url_format_asn }}/${pc}/secret`, {
+        method: 'POST', headers: {'X-CSRFToken': "{{ csrf_token }}"}, body: ""})
+      .then(response => response.text())
+      .then(secret => document.getElementById(pc + "-secret").innerHTML = secret)
+      .catch(error => alert("Generating secret failed: " + error))
+    }
+  }
+</script>
+{% endif %}
+<script>
+  function show_links(pc, vlan) {
+    fetch(`{{ asys.asn|url_format_asn }}/${pc}/interface/${vlan}/links`)
+    .then(response => response.json())
+    .then(data => create_link_table(data))
+    .catch(error => console.error(error))
+  }
+  function create_link_table(data) {
+    var table = document.getElementById("link-table-body");
+    table.innerHTML = "";
+    for (i in data) {
+      var link = data[i];
+      var tr = document.createElement("tr");
+      var type = document.createElement("td");
+      type.innerText = link.link_type;
+      tr.appendChild(type);
+      var as_a = document.createElement("td");
+      as_a.innerText = link['interface_a']['peering_client']['asys'];
+      tr.appendChild(as_a);
+      var port_a = document.createElement("td");
+      port_a.innerText = link['port_a'];
+      tr.appendChild(port_a);
+      var as_b = document.createElement("td");
+      as_b.innerText = link['interface_b']['peering_client']['asys'];
+      tr.appendChild(as_b);
+      var port_b = document.createElement("td");
+      port_b.innerText = link['port_b']
+      tr.appendChild(port_b);
+      table.appendChild(tr);
+    }
+  }
+</script>
+{% endblock head %}
+
+{% block content %}
+<h2>AS {{ asys.isd.isd_id }}-{{ asys.asn }} ({{ asys.name }})</h2>
+
+<p>Owner: <a href="{% url 'owner_details' asys.owner.name %}">{{ asys.owner.long_name }}</a></p>
+
+<h3>Peering Clients</h3>
+<table class="fancy-table">
+  <tr>
+    <th>Name</th>
+    <th>Status</th>
+    {% if user|has_access:asys %}
+      <th>API Secret</th>
+    {% endif %}
+  </tr>
+  {% for pc in asys.peering_clients.all %}
+    <tr>
+      <td>{{ pc.name }}</td>
+      <td>TODO</td>
+      {% if user|has_access:asys %}
+        <td id="{{ pc.name }}-secret">
+          <button type="button" onclick="show_secret('{{ pc.name }}')">Show</button>
+          <button type="button" onclick="reset_secret('{{ pc.name }}')">Generate</button>
+        </td>
+      {% endif %}
+    </tr>
+  {% endfor %}
+</table>
+
+<h3>Interfaces</h3>
+<table class="fancy-table">
+  <tr>
+    <th>Select</th>
+    <th>Peering Client</th>
+    <th>VLAN</th>
+    <th>IP</th>
+    <th>First Port</th>
+    <th>Last Port</th></tr>
+  {% for interface in interfaces %}
+    <tr>
+      <td><input type="radio", name="interface-selection",
+        onclick="show_links('{{ interface.peering_client.name }}', '{{ interface.vlan.name }}')">
+      </td>
+      <td>{{ interface.peering_client.name }}</td>
+      <td><a href="{% url 'vlan' interface.vlan.name%}">{{ interface.vlan.long_name }}</a></td>
+      <td>{{ interface.public_ip }}</td>
+      <td>{{ interface.first_port }}</td>
+      <td>{{ interface.last_port }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+<h3>Links</h3>
+<table class="fancy-table">
+  <thead><tr><th>Link Type</th><th>AS A</th><th>Port A</th><th>AS B</th><th>Port B</th></tr></thead>
+  <tbody id="link-table-body"></tbody>
+</table>
+
+{% if user|has_access:asys %}
+  <h3>Policies</h3>
+
+  <h4>Default Policy</h4>
+  <table class="fancy-table">
+    <tr><th>VLAN</th><th>Accept All</th></tr>
+    {% for policy in default_policies %}
+      <tr>
+        <td>{{ policy.vlan.long_name }}</td>
+        <td>{{ policy.accept }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h4>ISD Policies</h4>
+  <table class="fancy-table">
+    <tr><th>VLAN</th><th>Peer</th><th>Accept</th></tr>
+    {% for policy in isd_policies %}
+      <tr>
+        <td>{{ policy.vlan.long_name }}</td>
+        <td>{{ policy.peer_isd }}</td>
+        <td>{{ policy.accept }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h4>Owner Policies</h4>
+  <table class="fancy-table">
+    <tr><th>VLAN</th><th>Peer</th><th>Accept</th></tr>
+    {% for policy in owner_policies %}
+      <tr>
+        <td>{{ policy.vlan.long_name }}</td>
+        <td><a href="{% url 'owner_details' asys.owner.name %}">{{ policy.peer_owner }}</a></td>
+        <td>{{ policy.accept }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h4>AS Policies</h4>
+  <table class="fancy-table">
+    <tr><th>VLAN</th><th>Peer</th><th>Accept</th></tr>
+    {% for policy in as_policies %}
+      <tr>
+        <td>{{ policy.vlan.long_name }}</td>
+        <td><a href="{% url 'as_details' asys.asn|url_format_asn %}">{{ policy.peer_as }}</a></td>
+        <td>{{ policy.accept }}</td></tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% endblock content %}

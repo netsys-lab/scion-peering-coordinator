@@ -2,30 +2,42 @@ from django.core.exceptions import ValidationError
 from django.contrib import admin
 from django import forms
 
-from peering_coord.models import (
-    Organization, ISD, AS, VLAN, VlanMembership, Link, AsPeerPolicy, IsdPeerPolicy, OrgPeerPolicy)
+from peering_coord.models.ixp import Owner, VLAN, PeeringClient, Interface
+from peering_coord.models.scion import ISD, AS, VLAN, Link
+from peering_coord.models.policies import (DefaultPolicy,
+    AsPeerPolicy, IsdPeerPolicy, OwnerPeerPolicy)
 from peering_coord.peering_policy import update_accepted_peers
 
 
-##########
-### AS ###
-##########
+################
+## IXP Models ##
+################
 
-@admin.register(AS)
-class AsAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'isd', 'owner', 'is_core']
-    list_filter = ['isd', 'owner', 'is_core']
+@admin.register(Owner)
+class OwnerAdmin(admin.ModelAdmin):
+    fields = ['name', 'long_name', 'contact', 'users']
+    list_display = ['long_name', 'name', 'fmt_as_list']
 
 
-############
-### VLAN ###
-############
+@admin.register(PeeringClient)
+class PeeringClientAdmin(admin.ModelAdmin):
+    list_display = ['asys', 'name', 'fmt_vlan_list']
+    list_filter = ['asys']
+    ordering = ['asys', 'name']
+    readonly_fields = ['secret_token']
+
+
+class PeeringClientInline(admin.TabularInline):
+    model = PeeringClient
+    fields = ['name']
+    extra = 1
+
 
 @admin.register(VLAN)
 class VlanAdmin(admin.ModelAdmin):
-    fields = ['name', 'ip_network']
-    list_display = ['name', 'ip_network']
-    ordering = ['id']
+    fields = ['name', 'long_name', 'ip_network']
+    list_display = ['long_name', 'name', 'ip_network']
+    ordering = ['long_name', 'name']
 
     def get_readonly_fields(self, request, obj):
         if obj:
@@ -34,14 +46,10 @@ class VlanAdmin(admin.ModelAdmin):
             return ()
 
 
-######################
-### VlanMembership ###
-######################
-
-class VlanMembershipAdminForm(forms.ModelForm):
+class InterfaceAdminForm(forms.ModelForm):
     class Meta:
-        model = VlanMembership
-        fields = ['vlan', 'asys', 'public_ip', 'first_br_port', 'last_br_port']
+        model = Interface
+        fields = ['peering_client', 'vlan', 'public_ip', 'first_port', 'last_port']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,28 +69,39 @@ class VlanMembershipAdminForm(forms.ModelForm):
             if 'vlan' in cleaned_data:
                 try:
                     cleaned_data['public_ip'] = cleaned_data['vlan'].get_unused_ip()
-                except VLAN.AddressExhaustion:
+                except VLAN.NoUnusedIps:
                     raise ValidationError("VLAN IP addresses exhausted.",
                     code='addresses_exhausted')
 
         return cleaned_data
 
 
-@admin.register(VlanMembership)
-class IXPMemberAdmin(admin.ModelAdmin):
-    form = VlanMembershipAdminForm
-    list_display = ['vlan', 'asys', 'public_ip']
-    ordering = ['vlan', 'asys']
+@admin.register(Interface)
+class InterfaceAdmin(admin.ModelAdmin):
+    form = InterfaceAdminForm
+    list_display = ['peering_client', 'vlan', 'public_ip', 'first_port', 'last_port']
+    list_filter = ['vlan']
+    ordering = ['peering_client', 'vlan']
 
 
-############
-### Link ###
-############
+##################
+## SCION Models ##
+##################
+
+admin.site.register(ISD)
+
+
+@admin.register(AS)
+class AsAdmin(admin.ModelAdmin):
+    list_display = ['name', 'asn', 'isd', 'owner', 'fmt_vlan_list', 'is_core']
+    list_filter = ['isd', 'owner', 'is_core']
+    inlines = [PeeringClientInline]
+
 
 @admin.register(Link)
 class LinkAdmin(admin.ModelAdmin):
-    list_display = ['vlan', 'link_type', 'as_a', 'br_port_a', 'as_b', 'br_port_b']
-    list_filter = ['vlan', 'link_type']
+    list_display = ['link_type', 'interface_a', 'port_a', 'interface_b', 'port_b']
+    list_filter = ['link_type']
 
     def has_add_permission(self, request):
         return False # cannot add link directly
@@ -94,9 +113,9 @@ class LinkAdmin(admin.ModelAdmin):
         return False # cannot delete links directly
 
 
-################
-### Policies ###
-################
+###################
+## Policy Models ##
+###################
 
 class PolicyAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
@@ -112,6 +131,13 @@ class PolicyAdmin(admin.ModelAdmin):
         super().delete_queryset(request, queryset)
         for vlan, asys in update:
             update_accepted_peers(vlan, asys)
+
+
+@admin.register(DefaultPolicy)
+class DefaultPolicyAdmin(admin.ModelAdmin):
+    fields = ['vlan', 'asys', 'accept']
+    list_display = ['vlan', 'asys', 'accept']
+    list_filter = ['vlan', 'asys', 'accept']
 
 
 @admin.register(AsPeerPolicy)
@@ -130,19 +156,9 @@ class IsdPeerPolicyAdmin(PolicyAdmin):
     list_filter = ['vlan', 'asys']
 
 
-@admin.register(OrgPeerPolicy)
-class OrgPeerPolicyAdmin(PolicyAdmin):
-    fields = ['vlan', 'asys', 'peer_org', 'accept']
-    list_display = ['vlan', 'asys', 'peer_org', 'get_policy_type_str']
-    ordering = ['vlan', 'asys', 'accept', 'peer_org']
+@admin.register(OwnerPeerPolicy)
+class OwnerPeerPolicyAdmin(PolicyAdmin):
+    fields = ['vlan', 'asys', 'peer_owner', 'accept']
+    list_display = ['vlan', 'asys', 'peer_owner', 'get_policy_type_str']
+    ordering = ['vlan', 'asys', 'accept', 'peer_owner']
     list_filter = ['vlan', 'asys']
-
-
-##############
-### Others ###
-##############
-
-admin.site.register([
-    Organization,
-    ISD
-])

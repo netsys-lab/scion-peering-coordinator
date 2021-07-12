@@ -11,6 +11,10 @@ class ASN:
     GROUP_MAX_VALUE = (1 << GROUP_BITS) - 1
 
     def __init__(self, initializer: Union[int, str]):
+        """Initialize from an ASN string or a numerical representation.
+
+        :raises: ValueError: Initializer not recognized as a valid ASN.
+        """
         if isinstance(initializer, int):
             if initializer < 0 or initializer > self.MAX_VALUE:
                 raise ValueError("Invalid ASN. (Out of range)")

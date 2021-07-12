@@ -1,4 +1,4 @@
-"""Custom Django model fields."""
+"""Custom Django model fields"""
 
 import ipaddress
 

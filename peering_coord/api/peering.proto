@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package coord.api;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/netsys-lab/scion-peering-client/daemon/coord";
+
+
+// Peering API
+service Peering {
+  rpc StreamChannel(stream StreamMessageRequest) returns (stream StreamMessageResponse) {}
+
+  // List policies of the AS making the request.
+  rpc ListPolicies(ListPolicyRequest) returns (stream Policy) {}
+
+  // Create a new policy.
+  // Returns the newly create policy.
+  rpc CreatePolicy(Policy) returns (Policy) {}
+
+  // Delete a policy.
+  rpc DestroyPolicy(Policy) returns (google.protobuf.Empty) {}
+
+  // Replace existing polices in one or all VLANs.
+  // If some of the given policies fail validation, the RPC has no effect unless
+  // continue_on_error is true.
+  rpc SetPolicies(SetPoliciesRequest) returns (SetPoliciesResponse) {}
+}
+
+// Client to coordinator message sent on the persistent stream channel.
+message StreamMessageRequest {
+  oneof request {
+    ArbitrationUpdate arbitration = 1;
+  }
+}
+
+// Coordinator to client message sent on the persistent stream channel.
+message StreamMessageResponse {
+  oneof response {
+    ArbitrationUpdate arbitration = 1;
+    LinkUpdate link_update = 2;
+  }
+}
+
+// Send by the client to the coordinator to initiate selection of the primary client. The
+// coordinator selects the client with the highest election_id as primary. If the client that sent
+// the arbitration update request has become primary, the coordinator returns an ArbitrationUpdate
+// message with status set to zero (PRIMARY). Otherwise a status not equal to zero is returned.
+// When the primary client changes, all non-primary clients are notified by an ArbitrationUpdate
+// with status not qual to zero. The newly selected primary client gets an ArbitrationUpdate
+// with status zero (PRIMARY).
+message ArbitrationUpdate {
+  // VLAN for which the client registers itself as potential primary client. If no VLAN is given
+  // the client can be primary for all VLANs.
+  oneof vlan_ { string vlan = 1; }
+  // The client with the highest election_id becomes primary. If multiple clients use the same
+  // election_id, the first arbitration update wins.
+  int64 election_id = 2;
+  enum Status {
+    PRIMARY = 0;
+    NOT_PRIMARY = 1;
+    ERROR = 2;
+  }
+  // Ignored on requests. The coordinator sets status on replies to indicated whether the client is
+  // primary or not.
+  Status status = 3;
+}
+
+// Send from the coordinator to all clients of an AS when a new link becomes available or a
+// previously available link is no longer desired.
+message LinkUpdate {
+  enum Type {
+    CREATE = 0;
+    DESTROY = 1;
+  }
+  // Type of the update. Whether to add or remove a link.
+  Type type = 1;
+  enum LinkType {
+    PEERING = 0;
+    CORE = 1;
+    PROVIDER = 2;
+  }
+  // Type of the SCION link.
+  LinkType link_type = 2;
+  // ASN of the peer.
+  string peer_asn = 3;
+  // Local underlay endpoint.
+  UnderlayAddress local = 4;
+  // Remote underlay endpoint.
+  UnderlayAddress remote = 5;
+}
+
+// Endpoint in the IP/UDP underlay.
+message UnderlayAddress {
+  // Underlay IPv4/IPv6 address.
+  string ip = 1;
+  // Underlay UDP port.
+  uint32 port = 2;
+}
+
+message ListPolicyRequest {
+  // (Optional) Filter for VLAN.
+  string vlan = 1;
+  // (Optional) Filter for AS. If given, has to be the same as the AS making the request.
+  string asn = 2;
+  // (Optional) Filter for accept or deny rules.
+  oneof accept_ { bool accept = 3; }
+  // (Optional) Filter for default rules, peer AS, owner, or ISD.
+  oneof peer {
+    string peer_asn = 4;
+    string peer_owner = 5;
+    string peer_isd = 6;
+    google.protobuf.Empty peer_everyone = 7;
+  }
+}
+
+message Policy {
+  // VLAN the policy applies to.
+  string vlan = 1;
+  // AS owning the policy.
+  string asn = 2;
+  // Whether the peer or group of peers is accepted or rejected.
+  bool accept = 3;
+  // Peer(s) the rule applies to.
+  oneof peer {
+    string peer_asn = 4;
+    string peer_owner = 5;
+    string peer_isd = 6;
+  }
+}
+
+message SetPoliciesRequest {
+  // Policies to install. Must all be for the VLAN specified in 'vlan' if 'vlan' is not empty.
+  repeated Policy policies = 1;
+  // (Optional) VLAN to replace policies in. If given, only policies in the specified VLAN are
+  // reset and subsequently replaced by the policies provided in 'policies'. Otherwise policies in
+  // all VLANs are replaced.
+  string vlan = 2;
+  // Whether to install the policies even when some of them are invalid and have been ignored.
+  bool continue_on_error = 3;
+}
+
+message SetPoliciesResponse {
+  // Policies which have failed validation.
+  repeated Policy rejected_policies = 1;
+  // Error messages corresponding to the rejected policies.
+  repeated string errors = 2;
+}

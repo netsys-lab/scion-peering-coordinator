@@ -6,7 +6,7 @@ root=$1
 # Wait for DB
 appdeps.py --wait-secs 60 --port-wait $POSTGRES_HOST:$POSTGRES_PORT
 
-# Initialize DB (if reqired)
+# Initialize DB (if required)
 $root/manage.py makemigrations
 $root/manage.py migrate
 $root/manage.py createsuperuser --noinput

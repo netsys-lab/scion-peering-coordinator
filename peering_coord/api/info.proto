@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package coord.api;
+
+option go_package = "github.com/netsys-lab/scion-peering-client/daemon/coord";
+
+
+// Non-essential informational services provided by the coordinator.
+service Info {
+  // Retrieve information on an AS owner by owner name or by an AS.
+  rpc GetOwner(GetOwnerRequest) returns (Owner) {}
+
+  // Search for AS owners matching the given criteria.
+  rpc SearchOwner(SearchOwnerRequest) returns (stream Owner) {}
+}
+
+message Owner {
+  // Unique owner name.
+  string name = 1;
+  // Long descriptive owner name.
+  string long_name = 2;
+  // ASes owned by the owner.
+  repeated string asns = 3;
+}
+
+message GetOwnerRequest {
+  // (Optional) Name of the owner.
+  string name = 1;
+  // (Optional) An AS owned by the owner to get.
+  string asn = 2;
+}
+
+message SearchOwnerRequest {
+  // String contained in the name of the owner. Matching is case insensitive.
+  string long_name = 1;
+}

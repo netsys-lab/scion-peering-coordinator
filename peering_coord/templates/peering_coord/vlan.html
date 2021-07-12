@@ -1,0 +1,48 @@
+{% extends "peering_coord/base.html" %}
+{% load macros %}
+{% load peering_coord_extras %}
+
+{% macro th column="" heading="" %}
+<th>
+  <a href="{% url 'vlan' vlan.name %}?sort={{ column }}&amp;order={% if sort.by == column %}{{ sort.reverse_order }}{% else %}asc{% endif %}{% if query %}&amp;query={{ query|urlencode }}{% endif %}">
+      {{ heading }}
+  </a>
+  {% if sort.by == column %}
+  <i class="arrow arrow-{{ sort.order }}"></i>
+  {% endif %}
+</th>
+{% endmacro %}
+
+{% block content %}
+
+<div class="filter-box">
+  <form method="get">
+    <label style="width: 10%" for="query">Filter:</label>
+    <input style="width: 70%" type="text" id="query" name="query"
+      title="Filter by ASN, Description or Owner" value="{{ query|default:'' }}">
+    <input style="width: 15%" type="submit" value="Apply">
+  </form>
+</div>
+
+<div class="table-container">
+  <table class="fancy-table">
+    <tr>
+      {% use_macro th column="name" heading="AS" %}
+      {% use_macro th column="isd" heading="ISD" %}
+      {% use_macro th column="asn" heading="ASN" %}
+      {% use_macro th column="owner" heading="Owner" %}
+      <th>Peers</th>
+    </tr>
+    {% for asys in ases %}
+      <tr>
+        <td>{{ asys.name }}</td>
+        <td>{{ asys.isd.isd_id }}</td>
+        <td><a href="{% url 'as_details' asys.asn|url_format_asn %}">{{ asys.asn }}</a></td>
+        <td><a href="{% url 'owner_details' asys.owner.name %}">{{ asys.owner.long_name|truncatechars:50 }}</a></td>
+        <td>{{ asys|count_peers:vlan }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock content %}

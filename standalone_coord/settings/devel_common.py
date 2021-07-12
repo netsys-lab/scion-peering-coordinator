@@ -12,6 +12,13 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 
+# Name of the coordinator instance
+INSTANCE_NAME = "Demo"
+
+# Description text of the coordinator instance.
+INSTANCE_DESCRIPTION = "A demo of the peering coordinator."
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,6 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'huey.contrib.djhuey',
+    'rest_framework',
+    'django_grpc_framework',
+    'macros',
     'peering_coord',
 ]
 
@@ -68,6 +78,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'standalone_coord.wsgi.application'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
 # Database
@@ -111,3 +123,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGIN_REDIRECT_URL = '/'
+
+GRPC_FRAMEWORK = {
+    'SERVER_INTERCEPTORS': [
+        'peering_coord.api.authentication.TokenValidatorInterceptorInst'
+    ]
+}

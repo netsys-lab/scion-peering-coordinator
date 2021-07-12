@@ -1,0 +1,49 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}{{ title }} - SCION Peering Coordinator{% endblock %}</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'peering_coord/style.css' %}">
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+  <header>
+    <div class="navbar">
+      <a href="{% url 'index' %}">SCION Peering Coordinator</a>
+      <div class="navbar-right">
+        {% if user.is_authenticated %}
+          Logged in as {{ user.get_username }} ({{ user.email }})
+          <a href="{% url 'password_change' %}">Change Password</a>
+          <a href="{% url 'logout' %}">Logout</a>
+        {% else %}
+          <a href="{% url 'login' %}">Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  <hr>
+
+  <h1>{% block page_heading %}{{ title }} - SCION Peering Coordinator{% endblock %}</h1>
+
+  {% block content %}
+  {% endblock %}
+
+  <hr>
+  <footer>
+    <span>
+      {% now 'r' %}
+    </span>
+    <span class="footer-centered">
+      <a href="{% url 'admin:index' %}">Administration</a>
+    </span>
+    <span class="navbar-right">
+      <a href="https://github.com/netsys-lab/scion-peering-coordinator">Source Code</a>
+    </span>
+  </footer>
+</body>
+
+</html>

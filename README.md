@@ -3,36 +3,37 @@ SCION Peering Coordinator
 A peering coordination service for SCION ASes. Works as a companion to the
 [SCIONLab coordinator](https://github.com/netsec-ethz/scionlab).
 
-Original implementation as an extension to the SCIONLab coordinator: https://github.com/lschulz/scionlab-ixp
+Original implementation as an extension to the SCIONLab coordinator: https://github.com/lschulz/scionlab
 
-Implementation Status
----------------------
-DONE:
-- IXP and peering policy models
-- Peering policy resolution and link creation
-- Admin interface
-
-TODO:
-- Communication with client (gRPC)
-- Coordinator looking glass (Django views)
-
-Development
------------
-Install Python dependencies:
+Dependencies
+------------
+Install the Python dependencies by running (preferably in a venv)
 ```bash
 pip3 install -r requirements.txt
 ```
 
-Running the tests:
+Development
+-----------
+
+### Tests
 ```bash
 ./manage.py makemigrations
 ./manage.py migrate
 ./manage.py test
 ```
 
-Run the coordinator in Docker (Docker and docker-compose must be installed):
+### Running the development server
+```bash
+./manage.py runserver 127.0.0.1:8000            # first terminal
+./manage.py grpcrunserver --dev 127.0.0.1:50051 # second terminal
+```
+
+### Running in Docker
+Docker and docker-compose must be installed.
+
 ```bash
 cd docker/devel
 docker-compose up
 ```
+Main web interface is at http://localhost:8000
 Admin interface is at http://localhost:8000/admin (username: admin, password: admin).

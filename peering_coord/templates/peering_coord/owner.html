@@ -1,0 +1,17 @@
+{% extends "peering_coord/base.html" %}
+
+{% block content %}
+<h2>{{ owner.long_name }}</h2>
+<p>Identifier: {{ owner.name }}</p>
+
+<h3>Contact Information</h3>
+<p>{{ owner.contact }}</p>
+
+<h3>ASes</h3>
+<ul>
+  {% for asys in owner.ases.all %}
+    <li><a href="{% url 'as_details' asys.asn|url_format_asn %}">{{ asys }}</a></li>
+  {% endfor %}
+</ul>
+
+{% endblock content %}

@@ -1,0 +1,36 @@
+{% extends "peering_coord/base.html" %}
+{% load peering_coord_extras %}
+
+{% block content %}
+<p>{{ description }}</p>
+
+<h2>VLANs</h2>
+<ul class="as-list">
+  {% for vlan in vlans %}
+    <li><a href="{% url 'vlan' vlan.name%}">{{ vlan.long_name }}</a></li>
+  {% endfor %}
+</ul>
+
+{% if user.is_authenticated %}
+<h2>My ASes</h2>
+<table class="fancy-table">
+  <tr>
+    <th>AS</th><th>Owner</th><th>Connected Clients</th>
+    {% for vlan in vlans %}
+      <th>Peers ({{ vlan.long_name }})</th>
+    {% endfor %}
+  </tr>
+  {% for asys in ases %}
+    <tr>
+      <td><a href="{% url 'as_details' asys.asn|url_format_asn %}">{{ asys }}</a></td>
+      <td><a href="{% url 'owner_details' asys.owner.name %}">{{ asys.owner.long_name }}</a></td>
+      <td>TODO</td>
+      {% for count in peer_count|get_item:asys.id %}
+        <td>{{ count }}</td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% endblock content %}
