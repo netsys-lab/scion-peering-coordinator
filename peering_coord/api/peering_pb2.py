@@ -18,9 +18,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='peering_coord/api/peering.proto',
   package='coord.api',
   syntax='proto3',
-  serialized_options=b'Z7github.com/netsys-lab/scion-peering-client/daemon/coord',
+  serialized_options=b'Z6github.com/netsys-lab/scion-peering-coordinator/go/api',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1fpeering_coord/api/peering.proto\x12\tcoord.api\x1a\x1bgoogle/protobuf/empty.proto\"V\n\x14StreamMessageRequest\x12\x33\n\x0b\x61rbitration\x18\x01 \x01(\x0b\x32\x1c.coord.api.ArbitrationUpdateH\x00\x42\t\n\x07request\"\x86\x01\n\x15StreamMessageResponse\x12\x33\n\x0b\x61rbitration\x18\x01 \x01(\x0b\x32\x1c.coord.api.ArbitrationUpdateH\x00\x12,\n\x0blink_update\x18\x02 \x01(\x0b\x32\x15.coord.api.LinkUpdateH\x00\x42\n\n\x08response\"\xa9\x01\n\x11\x41rbitrationUpdate\x12\x0e\n\x04vlan\x18\x01 \x01(\tH\x00\x12\x13\n\x0b\x65lection_id\x18\x02 \x01(\x03\x12\x33\n\x06status\x18\x03 \x01(\x0e\x32#.coord.api.ArbitrationUpdate.Status\"1\n\x06Status\x12\x0b\n\x07PRIMARY\x10\x00\x12\x0f\n\x0bNOT_PRIMARY\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x42\x07\n\x05vlan_\"\xa4\x02\n\nLinkUpdate\x12(\n\x04type\x18\x01 \x01(\x0e\x32\x1a.coord.api.LinkUpdate.Type\x12\x31\n\tlink_type\x18\x02 \x01(\x0e\x32\x1e.coord.api.LinkUpdate.LinkType\x12\x10\n\x08peer_asn\x18\x03 \x01(\t\x12)\n\x05local\x18\x04 \x01(\x0b\x32\x1a.coord.api.UnderlayAddress\x12*\n\x06remote\x18\x05 \x01(\x0b\x32\x1a.coord.api.UnderlayAddress\"\x1f\n\x04Type\x12\n\n\x06\x43REATE\x10\x00\x12\x0b\n\x07\x44\x45STROY\x10\x01\"/\n\x08LinkType\x12\x0b\n\x07PEERING\x10\x00\x12\x08\n\x04\x43ORE\x10\x01\x12\x0c\n\x08PROVIDER\x10\x02\"+\n\x0fUnderlayAddress\x12\n\n\x02ip\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\r\"\xc2\x01\n\x11ListPolicyRequest\x12\x0c\n\x04vlan\x18\x01 \x01(\t\x12\x0b\n\x03\x61sn\x18\x02 \x01(\t\x12\x10\n\x06\x61\x63\x63\x65pt\x18\x03 \x01(\x08H\x00\x12\x12\n\x08peer_asn\x18\x04 \x01(\tH\x01\x12\x14\n\npeer_owner\x18\x05 \x01(\tH\x01\x12\x12\n\x08peer_isd\x18\x06 \x01(\tH\x01\x12/\n\rpeer_everyone\x18\x07 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x01\x42\t\n\x07\x61\x63\x63\x65pt_B\x06\n\x04peer\"y\n\x06Policy\x12\x0c\n\x04vlan\x18\x01 \x01(\t\x12\x0b\n\x03\x61sn\x18\x02 \x01(\t\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x03 \x01(\x08\x12\x12\n\x08peer_asn\x18\x04 \x01(\tH\x00\x12\x14\n\npeer_owner\x18\x05 \x01(\tH\x00\x12\x12\n\x08peer_isd\x18\x06 \x01(\tH\x00\x42\x06\n\x04peer\"b\n\x12SetPoliciesRequest\x12#\n\x08policies\x18\x01 \x03(\x0b\x32\x11.coord.api.Policy\x12\x0c\n\x04vlan\x18\x02 \x01(\t\x12\x19\n\x11\x63ontinue_on_error\x18\x03 \x01(\x08\"S\n\x13SetPoliciesResponse\x12,\n\x11rejected_policies\x18\x01 \x03(\x0b\x32\x11.coord.api.Policy\x12\x0e\n\x06\x65rrors\x18\x02 \x03(\t2\xee\x02\n\x07Peering\x12X\n\rStreamChannel\x12\x1f.coord.api.StreamMessageRequest\x1a .coord.api.StreamMessageResponse\"\x00(\x01\x30\x01\x12\x43\n\x0cListPolicies\x12\x1c.coord.api.ListPolicyRequest\x1a\x11.coord.api.Policy\"\x00\x30\x01\x12\x36\n\x0c\x43reatePolicy\x12\x11.coord.api.Policy\x1a\x11.coord.api.Policy\"\x00\x12<\n\rDestroyPolicy\x12\x11.coord.api.Policy\x1a\x16.google.protobuf.Empty\"\x00\x12N\n\x0bSetPolicies\x12\x1d.coord.api.SetPoliciesRequest\x1a\x1e.coord.api.SetPoliciesResponse\"\x00\x42\x39Z7github.com/netsys-lab/scion-peering-client/daemon/coordb\x06proto3'
+  serialized_pb=b'\n\x1fpeering_coord/api/peering.proto\x12\tcoord.api\x1a\x1bgoogle/protobuf/empty.proto\"V\n\x14StreamMessageRequest\x12\x33\n\x0b\x61rbitration\x18\x01 \x01(\x0b\x32\x1c.coord.api.ArbitrationUpdateH\x00\x42\t\n\x07request\"\xae\x01\n\x15StreamMessageResponse\x12\x33\n\x0b\x61rbitration\x18\x01 \x01(\x0b\x32\x1c.coord.api.ArbitrationUpdateH\x00\x12,\n\x0blink_update\x18\x02 \x01(\x0b\x32\x15.coord.api.LinkUpdateH\x00\x12&\n\x05\x65rror\x18\x03 \x01(\x0b\x32\x15.coord.api.AsyncErrorH\x00\x42\n\n\x08response\"\xa9\x01\n\x11\x41rbitrationUpdate\x12\x0e\n\x04vlan\x18\x01 \x01(\tH\x00\x12\x13\n\x0b\x65lection_id\x18\x02 \x01(\x03\x12\x33\n\x06status\x18\x03 \x01(\x0e\x32#.coord.api.ArbitrationUpdate.Status\"1\n\x06Status\x12\t\n\x05\x45RROR\x10\x00\x12\x0b\n\x07PRIMARY\x10\x01\x12\x0f\n\x0bNOT_PRIMARY\x10\x02\x42\x07\n\x05vlan_\"\xa4\x02\n\nLinkUpdate\x12(\n\x04type\x18\x01 \x01(\x0e\x32\x1a.coord.api.LinkUpdate.Type\x12\x31\n\tlink_type\x18\x02 \x01(\x0e\x32\x1e.coord.api.LinkUpdate.LinkType\x12\x10\n\x08peer_asn\x18\x03 \x01(\t\x12)\n\x05local\x18\x04 \x01(\x0b\x32\x1a.coord.api.UnderlayAddress\x12*\n\x06remote\x18\x05 \x01(\x0b\x32\x1a.coord.api.UnderlayAddress\"\x1f\n\x04Type\x12\n\n\x06\x43REATE\x10\x00\x12\x0b\n\x07\x44\x45STROY\x10\x01\"/\n\x08LinkType\x12\x0b\n\x07PEERING\x10\x00\x12\x08\n\x04\x43ORE\x10\x01\x12\x0c\n\x08PROVIDER\x10\x02\"z\n\nAsyncError\x12(\n\x04\x63ode\x18\x01 \x01(\x0e\x32\x1a.coord.api.AsyncError.Code\x12\x0f\n\x07message\x18\x02 \x01(\t\"1\n\x04\x43ode\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\x18\n\x14LINK_CREATION_FAILED\x10\x01\"+\n\x0fUnderlayAddress\x12\n\n\x02ip\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\r\"`\n\tPortRange\x12\x16\n\x0einterface_vlan\x18\x01 \x01(\t\x12\x14\n\x0cinterface_ip\x18\x02 \x01(\t\x12\x12\n\nfirst_port\x18\x03 \x01(\r\x12\x11\n\tlast_port\x18\x04 \x01(\r\"\xc2\x01\n\x11ListPolicyRequest\x12\x0c\n\x04vlan\x18\x01 \x01(\t\x12\x0b\n\x03\x61sn\x18\x02 \x01(\t\x12\x10\n\x06\x61\x63\x63\x65pt\x18\x03 \x01(\x08H\x00\x12\x12\n\x08peer_asn\x18\x04 \x01(\tH\x01\x12\x14\n\npeer_owner\x18\x05 \x01(\tH\x01\x12\x12\n\x08peer_isd\x18\x06 \x01(\tH\x01\x12/\n\rpeer_everyone\x18\x07 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x01\x42\t\n\x07\x61\x63\x63\x65pt_B\x06\n\x04peer\"y\n\x06Policy\x12\x0c\n\x04vlan\x18\x01 \x01(\t\x12\x0b\n\x03\x61sn\x18\x02 \x01(\t\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x03 \x01(\x08\x12\x12\n\x08peer_asn\x18\x04 \x01(\tH\x00\x12\x14\n\npeer_owner\x18\x05 \x01(\tH\x00\x12\x12\n\x08peer_isd\x18\x06 \x01(\tH\x00\x42\x06\n\x04peer\"b\n\x12SetPoliciesRequest\x12#\n\x08policies\x18\x01 \x03(\x0b\x32\x11.coord.api.Policy\x12\x0c\n\x04vlan\x18\x02 \x01(\t\x12\x19\n\x11\x63ontinue_on_error\x18\x03 \x01(\x08\"S\n\x13SetPoliciesResponse\x12,\n\x11rejected_policies\x18\x01 \x03(\x0b\x32\x11.coord.api.Policy\x12\x0e\n\x06\x65rrors\x18\x02 \x03(\t2\xae\x03\n\x07Peering\x12X\n\rStreamChannel\x12\x1f.coord.api.StreamMessageRequest\x1a .coord.api.StreamMessageResponse\"\x00(\x01\x30\x01\x12>\n\x0cSetPortRange\x12\x14.coord.api.PortRange\x1a\x16.google.protobuf.Empty\"\x00\x12\x43\n\x0cListPolicies\x12\x1c.coord.api.ListPolicyRequest\x1a\x11.coord.api.Policy\"\x00\x30\x01\x12\x36\n\x0c\x43reatePolicy\x12\x11.coord.api.Policy\x1a\x11.coord.api.Policy\"\x00\x12<\n\rDestroyPolicy\x12\x11.coord.api.Policy\x1a\x16.google.protobuf.Empty\"\x00\x12N\n\x0bSetPolicies\x12\x1d.coord.api.SetPoliciesRequest\x1a\x1e.coord.api.SetPoliciesResponse\"\x00\x42\x38Z6github.com/netsys-lab/scion-peering-coordinator/go/apib\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
 
@@ -34,25 +34,25 @@ _ARBITRATIONUPDATE_STATUS = _descriptor.EnumDescriptor(
   create_key=_descriptor._internal_create_key,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='PRIMARY', index=0, number=0,
+      name='ERROR', index=0, number=0,
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
     _descriptor.EnumValueDescriptor(
-      name='NOT_PRIMARY', index=1, number=1,
+      name='PRIMARY', index=1, number=1,
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
     _descriptor.EnumValueDescriptor(
-      name='ERROR', index=2, number=2,
+      name='NOT_PRIMARY', index=2, number=2,
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=412,
-  serialized_end=461,
+  serialized_start=452,
+  serialized_end=501,
 )
 _sym_db.RegisterEnumDescriptor(_ARBITRATIONUPDATE_STATUS)
 
@@ -76,8 +76,8 @@ _LINKUPDATE_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=685,
-  serialized_end=716,
+  serialized_start=725,
+  serialized_end=756,
 )
 _sym_db.RegisterEnumDescriptor(_LINKUPDATE_TYPE)
 
@@ -106,10 +106,35 @@ _LINKUPDATE_LINKTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=718,
-  serialized_end=765,
+  serialized_start=758,
+  serialized_end=805,
 )
 _sym_db.RegisterEnumDescriptor(_LINKUPDATE_LINKTYPE)
+
+_ASYNCERROR_CODE = _descriptor.EnumDescriptor(
+  name='Code',
+  full_name='coord.api.AsyncError.Code',
+  filename=None,
+  file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNSPECIFIED', index=0, number=0,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='LINK_CREATION_FAILED', index=1, number=1,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=880,
+  serialized_end=929,
+)
+_sym_db.RegisterEnumDescriptor(_ASYNCERROR_CODE)
 
 
 _STREAMMESSAGEREQUEST = _descriptor.Descriptor(
@@ -171,6 +196,13 @@ _STREAMMESSAGERESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='coord.api.StreamMessageResponse.error', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -189,7 +221,7 @@ _STREAMMESSAGERESPONSE = _descriptor.Descriptor(
     fields=[]),
   ],
   serialized_start=164,
-  serialized_end=298,
+  serialized_end=338,
 )
 
 
@@ -240,8 +272,8 @@ _ARBITRATIONUPDATE = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=301,
-  serialized_end=470,
+  serialized_start=341,
+  serialized_end=510,
 )
 
 
@@ -302,8 +334,48 @@ _LINKUPDATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=473,
-  serialized_end=765,
+  serialized_start=513,
+  serialized_end=805,
+)
+
+
+_ASYNCERROR = _descriptor.Descriptor(
+  name='AsyncError',
+  full_name='coord.api.AsyncError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='code', full_name='coord.api.AsyncError.code', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='message', full_name='coord.api.AsyncError.message', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _ASYNCERROR_CODE,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=807,
+  serialized_end=929,
 )
 
 
@@ -341,8 +413,61 @@ _UNDERLAYADDRESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=767,
-  serialized_end=810,
+  serialized_start=931,
+  serialized_end=974,
+)
+
+
+_PORTRANGE = _descriptor.Descriptor(
+  name='PortRange',
+  full_name='coord.api.PortRange',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='interface_vlan', full_name='coord.api.PortRange.interface_vlan', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='interface_ip', full_name='coord.api.PortRange.interface_ip', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='first_port', full_name='coord.api.PortRange.first_port', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='last_port', full_name='coord.api.PortRange.last_port', index=3,
+      number=4, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=976,
+  serialized_end=1072,
 )
 
 
@@ -425,8 +550,8 @@ _LISTPOLICYREQUEST = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=813,
-  serialized_end=1007,
+  serialized_start=1075,
+  serialized_end=1269,
 )
 
 
@@ -497,8 +622,8 @@ _POLICY = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=1009,
-  serialized_end=1130,
+  serialized_start=1271,
+  serialized_end=1392,
 )
 
 
@@ -543,8 +668,8 @@ _SETPOLICIESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1132,
-  serialized_end=1230,
+  serialized_start=1394,
+  serialized_end=1492,
 )
 
 
@@ -582,8 +707,8 @@ _SETPOLICIESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1232,
-  serialized_end=1315,
+  serialized_start=1494,
+  serialized_end=1577,
 )
 
 _STREAMMESSAGEREQUEST.fields_by_name['arbitration'].message_type = _ARBITRATIONUPDATE
@@ -592,12 +717,16 @@ _STREAMMESSAGEREQUEST.oneofs_by_name['request'].fields.append(
 _STREAMMESSAGEREQUEST.fields_by_name['arbitration'].containing_oneof = _STREAMMESSAGEREQUEST.oneofs_by_name['request']
 _STREAMMESSAGERESPONSE.fields_by_name['arbitration'].message_type = _ARBITRATIONUPDATE
 _STREAMMESSAGERESPONSE.fields_by_name['link_update'].message_type = _LINKUPDATE
+_STREAMMESSAGERESPONSE.fields_by_name['error'].message_type = _ASYNCERROR
 _STREAMMESSAGERESPONSE.oneofs_by_name['response'].fields.append(
   _STREAMMESSAGERESPONSE.fields_by_name['arbitration'])
 _STREAMMESSAGERESPONSE.fields_by_name['arbitration'].containing_oneof = _STREAMMESSAGERESPONSE.oneofs_by_name['response']
 _STREAMMESSAGERESPONSE.oneofs_by_name['response'].fields.append(
   _STREAMMESSAGERESPONSE.fields_by_name['link_update'])
 _STREAMMESSAGERESPONSE.fields_by_name['link_update'].containing_oneof = _STREAMMESSAGERESPONSE.oneofs_by_name['response']
+_STREAMMESSAGERESPONSE.oneofs_by_name['response'].fields.append(
+  _STREAMMESSAGERESPONSE.fields_by_name['error'])
+_STREAMMESSAGERESPONSE.fields_by_name['error'].containing_oneof = _STREAMMESSAGERESPONSE.oneofs_by_name['response']
 _ARBITRATIONUPDATE.fields_by_name['status'].enum_type = _ARBITRATIONUPDATE_STATUS
 _ARBITRATIONUPDATE_STATUS.containing_type = _ARBITRATIONUPDATE
 _ARBITRATIONUPDATE.oneofs_by_name['vlan_'].fields.append(
@@ -609,6 +738,8 @@ _LINKUPDATE.fields_by_name['local'].message_type = _UNDERLAYADDRESS
 _LINKUPDATE.fields_by_name['remote'].message_type = _UNDERLAYADDRESS
 _LINKUPDATE_TYPE.containing_type = _LINKUPDATE
 _LINKUPDATE_LINKTYPE.containing_type = _LINKUPDATE
+_ASYNCERROR.fields_by_name['code'].enum_type = _ASYNCERROR_CODE
+_ASYNCERROR_CODE.containing_type = _ASYNCERROR
 _LISTPOLICYREQUEST.fields_by_name['peer_everyone'].message_type = google_dot_protobuf_dot_empty__pb2._EMPTY
 _LISTPOLICYREQUEST.oneofs_by_name['accept_'].fields.append(
   _LISTPOLICYREQUEST.fields_by_name['accept'])
@@ -640,7 +771,9 @@ DESCRIPTOR.message_types_by_name['StreamMessageRequest'] = _STREAMMESSAGEREQUEST
 DESCRIPTOR.message_types_by_name['StreamMessageResponse'] = _STREAMMESSAGERESPONSE
 DESCRIPTOR.message_types_by_name['ArbitrationUpdate'] = _ARBITRATIONUPDATE
 DESCRIPTOR.message_types_by_name['LinkUpdate'] = _LINKUPDATE
+DESCRIPTOR.message_types_by_name['AsyncError'] = _ASYNCERROR
 DESCRIPTOR.message_types_by_name['UnderlayAddress'] = _UNDERLAYADDRESS
+DESCRIPTOR.message_types_by_name['PortRange'] = _PORTRANGE
 DESCRIPTOR.message_types_by_name['ListPolicyRequest'] = _LISTPOLICYREQUEST
 DESCRIPTOR.message_types_by_name['Policy'] = _POLICY
 DESCRIPTOR.message_types_by_name['SetPoliciesRequest'] = _SETPOLICIESREQUEST
@@ -675,12 +808,26 @@ LinkUpdate = _reflection.GeneratedProtocolMessageType('LinkUpdate', (_message.Me
   })
 _sym_db.RegisterMessage(LinkUpdate)
 
+AsyncError = _reflection.GeneratedProtocolMessageType('AsyncError', (_message.Message,), {
+  'DESCRIPTOR' : _ASYNCERROR,
+  '__module__' : 'peering_coord.api.peering_pb2'
+  # @@protoc_insertion_point(class_scope:coord.api.AsyncError)
+  })
+_sym_db.RegisterMessage(AsyncError)
+
 UnderlayAddress = _reflection.GeneratedProtocolMessageType('UnderlayAddress', (_message.Message,), {
   'DESCRIPTOR' : _UNDERLAYADDRESS,
   '__module__' : 'peering_coord.api.peering_pb2'
   # @@protoc_insertion_point(class_scope:coord.api.UnderlayAddress)
   })
 _sym_db.RegisterMessage(UnderlayAddress)
+
+PortRange = _reflection.GeneratedProtocolMessageType('PortRange', (_message.Message,), {
+  'DESCRIPTOR' : _PORTRANGE,
+  '__module__' : 'peering_coord.api.peering_pb2'
+  # @@protoc_insertion_point(class_scope:coord.api.PortRange)
+  })
+_sym_db.RegisterMessage(PortRange)
 
 ListPolicyRequest = _reflection.GeneratedProtocolMessageType('ListPolicyRequest', (_message.Message,), {
   'DESCRIPTOR' : _LISTPOLICYREQUEST,
@@ -720,8 +867,8 @@ _PEERING = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1318,
-  serialized_end=1684,
+  serialized_start=1580,
+  serialized_end=2010,
   methods=[
   _descriptor.MethodDescriptor(
     name='StreamChannel',
@@ -734,9 +881,19 @@ _PEERING = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
+    name='SetPortRange',
+    full_name='coord.api.Peering.SetPortRange',
+    index=1,
+    containing_service=None,
+    input_type=_PORTRANGE,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
     name='ListPolicies',
     full_name='coord.api.Peering.ListPolicies',
-    index=1,
+    index=2,
     containing_service=None,
     input_type=_LISTPOLICYREQUEST,
     output_type=_POLICY,
@@ -746,7 +903,7 @@ _PEERING = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='CreatePolicy',
     full_name='coord.api.Peering.CreatePolicy',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_POLICY,
     output_type=_POLICY,
@@ -756,7 +913,7 @@ _PEERING = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='DestroyPolicy',
     full_name='coord.api.Peering.DestroyPolicy',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_POLICY,
     output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
@@ -766,7 +923,7 @@ _PEERING = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='SetPolicies',
     full_name='coord.api.Peering.SetPolicies',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=_SETPOLICIESREQUEST,
     output_type=_SETPOLICIESRESPONSE,

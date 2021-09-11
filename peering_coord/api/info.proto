@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package coord.api;
 
-option go_package = "github.com/netsys-lab/scion-peering-client/daemon/coord";
+option go_package = "github.com/netsys-lab/scion-peering-coordinator/go/api";
 
 
 // Non-essential informational services provided by the coordinator.

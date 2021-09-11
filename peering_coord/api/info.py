@@ -1,6 +1,4 @@
-"""
-Informational API
-"""
+"""Implementation of the informational gRPC API provided by the coordinator."""
 import grpc
 from django_grpc_framework.services import Service
 from django.db import transaction

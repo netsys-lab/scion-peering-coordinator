@@ -21,6 +21,11 @@ class PeeringStub(object):
                 request_serializer=peering__coord_dot_api_dot_peering__pb2.StreamMessageRequest.SerializeToString,
                 response_deserializer=peering__coord_dot_api_dot_peering__pb2.StreamMessageResponse.FromString,
                 )
+        self.SetPortRange = channel.unary_unary(
+                '/coord.api.Peering/SetPortRange',
+                request_serializer=peering__coord_dot_api_dot_peering__pb2.PortRange.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.ListPolicies = channel.unary_stream(
                 '/coord.api.Peering/ListPolicies',
                 request_serializer=peering__coord_dot_api_dot_peering__pb2.ListPolicyRequest.SerializeToString,
@@ -48,7 +53,15 @@ class PeeringServicer(object):
     """
 
     def StreamChannel(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file."""
+        """Persistent channel for push-notifications from the coordinator to the clients.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetPortRange(self, request, context):
+        """Set the UDP port range used for SCION overlay connections.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -91,6 +104,11 @@ def add_PeeringServicer_to_server(servicer, server):
                     servicer.StreamChannel,
                     request_deserializer=peering__coord_dot_api_dot_peering__pb2.StreamMessageRequest.FromString,
                     response_serializer=peering__coord_dot_api_dot_peering__pb2.StreamMessageResponse.SerializeToString,
+            ),
+            'SetPortRange': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetPortRange,
+                    request_deserializer=peering__coord_dot_api_dot_peering__pb2.PortRange.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'ListPolicies': grpc.unary_stream_rpc_method_handler(
                     servicer.ListPolicies,
@@ -137,6 +155,23 @@ class Peering(object):
         return grpc.experimental.stream_stream(request_iterator, target, '/coord.api.Peering/StreamChannel',
             peering__coord_dot_api_dot_peering__pb2.StreamMessageRequest.SerializeToString,
             peering__coord_dot_api_dot_peering__pb2.StreamMessageResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetPortRange(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/coord.api.Peering/SetPortRange',
+            peering__coord_dot_api_dot_peering__pb2.PortRange.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

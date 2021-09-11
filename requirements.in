@@ -1,4 +1,5 @@
 django
+gunicorn
 
 # Database adapter for PostgreSQL
 psycopg2-binary
@@ -9,7 +10,3 @@ grpcio
 grpcio-tools
 djangorestframework
 djangogrpcframework
-
-# Task Queue
-redis
-huey

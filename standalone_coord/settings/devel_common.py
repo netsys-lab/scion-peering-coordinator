@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 
 # Name of the coordinator instance
-INSTANCE_NAME = "Demo"
+INSTANCE_NAME = "Demo Coordinator"
 
 # Description text of the coordinator instance.
 INSTANCE_DESCRIPTION = "A demo of the peering coordinator."
@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'huey.contrib.djhuey',
     'rest_framework',
     'django_grpc_framework',
     'macros',
@@ -123,6 +122,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 LOGIN_REDIRECT_URL = '/'
 

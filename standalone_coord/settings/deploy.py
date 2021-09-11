@@ -1,2 +1,1 @@
-"""Django settings for deployment in a production environment.
-"""
+"""Django settings for deployment in a production environment."""

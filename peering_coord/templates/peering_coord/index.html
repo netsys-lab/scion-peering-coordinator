@@ -24,7 +24,7 @@
     <tr>
       <td><a href="{% url 'as_details' asys.asn|url_format_asn %}">{{ asys }}</a></td>
       <td><a href="{% url 'owner_details' asys.owner.name %}">{{ asys.owner.long_name }}</a></td>
-      <td>TODO</td>
+      <td>{{ asys.count_connected_clients }}</td>
       {% for count in peer_count|get_item:asys.id %}
         <td>{{ count }}</td>
       {% endfor %}

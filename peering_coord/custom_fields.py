@@ -63,7 +63,8 @@ class IpAddressField(models.Field):
     def from_db_value(self, value: Optional[str], expression, connection) -> Optional[IpAddress]:
         if value is None:
             return value
-        return ipaddress.ip_address(value)
+        # FIXME: rstrip is required to make this work with Postgres for some reason
+        return ipaddress.ip_address(value.rstrip())
 
     def get_prep_value(self, value: IpAddress) -> str:
         return value.exploded
@@ -100,7 +101,8 @@ class IpNetworkField(models.Field):
     def from_db_value(self, value: Optional[str], expression, connection) -> Optional[IpNetwork]:
         if value is None:
             return value
-        return ipaddress.ip_network(value)
+        # FIXME: rstrip is required to make this work with Postgres for some reason
+        return ipaddress.ip_network(value.rstrip())
 
     def get_prep_value(self, value: IpNetwork) -> str:
         return value.exploded
@@ -120,7 +122,7 @@ class IpNetworkField(models.Field):
                 code='invalid_ip', params={'value': value, 'msg': str(e)})
 
 
-class L4PortField(models.SmallIntegerField):
+class L4PortField(models.IntegerField):
     """L4 port number."""
     description = "L4 port"
 

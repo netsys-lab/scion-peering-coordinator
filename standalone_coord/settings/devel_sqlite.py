@@ -17,16 +17,3 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3'
     }
 }
-
-######################
-### Huey Task Queue ##
-######################
-
-HUEY = {
-    'huey_class': 'huey.MemoryHuey',
-    'name': 'peering-coord',
-    'immediate': True,
-    'consumer': {
-        'workers': 2
-    }
-}

@@ -3,10 +3,12 @@
 from django.db import transaction
 from django.db.models import Q, QuerySet
 
-from peering_coord.models.ixp import Owner, VLAN, Interface
-from peering_coord.models.scion import AS, AcceptedPeer, Link
+from peering_coord.api.client_connection import ClientRegistry
+from peering_coord.api.peering_pb2 import AsyncError
+from peering_coord.models.ixp import VLAN, Interface, Owner
 from peering_coord.models.policies import (
-    DefaultPolicy, AsPeerPolicy, IsdPeerPolicy, OwnerPeerPolicy)
+    AsPeerPolicy, DefaultPolicy, IsdPeerPolicy, OwnerPeerPolicy)
+from peering_coord.models.scion import AS, AcceptedPeer, Link
 
 
 @transaction.atomic
@@ -130,18 +132,38 @@ def _create_links(vlan: VLAN, as_a: AS, as_b: AS):
         if not as_a.is_core and as_b.is_core:
             as_a, as_b = as_b, as_a
     else:
-        # TODO: Report error to client
+        error = AsyncError()
+        error.code = AsyncError.Code.LINK_CREATION_FAILED
+        error.message = "Cannot create a link between ASes {} and {} of incompatible type.".format(
+            as_a, as_b
+        )
+        ClientRegistry.send_async_error(as_a.asn, error)
+        ClientRegistry.send_async_error(as_b.asn, error)
         return
 
     for interface_a in as_a.query_interfaces().filter(vlan=vlan).all():
         for interface_b in as_b.query_interfaces().filter(vlan=vlan).all():
+            port_a = port_b = None
+
             try:
                 port_a = interface_a.get_unused_port()
+            except Interface.NoUnusedPorts:
+                error = AsyncError()
+                error.code = AsyncError.Code.LINK_CREATION_FAILED
+                error.message = "Allocated port range is exhausted on interface {}.".format(
+                    interface_a)
+                ClientRegistry.send_async_error(as_a.asn, error)
+
+            try:
                 port_b = interface_b.get_unused_port()
             except Interface.NoUnusedPorts:
-                # TODO: Report error to client
-                break
+                error = AsyncError()
+                error.code = AsyncError.Code.LINK_CREATION_FAILED
+                error.message = "Allocated port range is exhausted on interface {}.".format(
+                    interface_b)
+                ClientRegistry.send_async_error(as_b.asn, error)
 
-            Link.objects.create(link_type=link_type,
-                interface_a=interface_a, interface_b=interface_b,
-                port_a=port_a, port_b=port_b)
+            if port_a and port_b:
+                Link.objects.create(link_type,
+                    interface_a=interface_a, interface_b=interface_b,
+                    port_a=port_a, port_b=port_b)

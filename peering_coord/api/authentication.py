@@ -25,7 +25,7 @@ def get_client_from_metadata(metadata) -> Tuple[str, str]:
     for datum in metadata:
         if datum[0] == ASN_HEADER_KEY:
             asn = datum[1]
-        elif datum[1] == CLIENT_NAME_HEADER_KEY:
+        elif datum[0] == CLIENT_NAME_HEADER_KEY:
             client = datum[1]
 
     return (asn, client)

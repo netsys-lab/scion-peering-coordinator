@@ -17,6 +17,7 @@ def url_format_asn(asn):
 @register.filter
 def count_peers(asys, vlan):
     """Gets the number of peers connected to an AS in a certain VLAN."""
+    # TODO: Cache
     return asys.query_connected_peers(vlan=vlan).count()
 
 

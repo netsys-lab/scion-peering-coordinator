@@ -8,7 +8,9 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, Q
+from django.dispatch import receiver
 
+from peering_coord.api.peering_pb2 import LinkUpdate
 from peering_coord.custom_fields import IpAddressField, IpNetworkField, L4PortField
 from peering_coord.models.limits import API_TOKEN_BYTES, MAX_LONG_NAME_LENGTH, MAX_SHORT_NAME_LENGTH
 
@@ -97,6 +99,20 @@ class PeeringClient(models.Model):
         """Returns a list of VLANs this peering deamon is managing links in."""
         return VLAN.objects.filter(id__in=self.interfaces.values_list('vlan')).all()
 
+    def is_connected(self) -> bool:
+        """Returns whether the client is connected to the coordinator."""
+        from peering_coord.api.client_connection import ClientRegistry
+        connections = ClientRegistry.get_clients(self.asys.asn)
+        if connections is None:
+            return False
+        else:
+            return self.name in connections.connections
+
+@receiver(models.signals.post_delete, sender=PeeringClient)
+def delete_peering_client_hook(sender, instance, using, **kwargs):
+    from peering_coord.api.client_connection import ClientRegistry
+    ClientRegistry.remove_client(instance.asn.asys, instance.name)
+
 
 class VLAN(models.Model):
     """Represents a peering LAN. Every VLAN has its own participants, peering policies, and links.
@@ -175,12 +191,12 @@ class Interface(models.Model):
     first_port = L4PortField(
         verbose_name="First BR Port",
         help_text="First UDP port to assign to SCION links.",
-        default=50500
+        default=0
     )
     last_port = L4PortField(
         verbose_name="Last BR Port",
         help_text="One past the last UDP port to assign to SCION links.",
-        default=51000
+        default=0
     )
     links = models.ManyToManyField(
         "self",
@@ -222,6 +238,10 @@ class Interface(models.Model):
         except VLAN.DoesNotExist:
             pass # vlan is empty, will be caught during form validation
 
+    def query_links(self):
+        """Returns a queryset containing all links of this interface."""
+        return Link.objects.filter(Q(interface_a=self) | Q(interface_b=self))
+
     class NoUnusedPorts(Exception):
         def __init__(self, interface_str: str):
             super().__init__("No ports available in %s." % interface_str)
@@ -245,6 +265,44 @@ class Interface(models.Model):
                 return j
         else:
             raise self.NoUnusedPorts(str(self))
+
+
+@receiver(models.signals.post_delete, sender=Interface)
+def delete_interface_hook(sender, instance, using, **kwargs):
+    from peering_coord.api.client_connection import ClientRegistry
+
+    ClientRegistry.remove_interface(
+        instance.peering_client.asys.asn,
+        instance.peering_client.name,
+        instance.vlan.name)
+
+
+class LinkManager(models.Manager):
+    def create(self, link_type, interface_a, interface_b, port_a, port_b, **kwargs):
+        from peering_coord.api.client_connection import (ClientRegistry,
+                                                         create_link_update)
+
+        link = super().create(
+            link_type=link_type,
+            interface_a=interface_a,
+            interface_b=interface_b,
+            port_a=port_a,
+            port_b=port_b,
+            **kwargs)
+
+        update = create_link_update(LinkUpdate.Type.CREATE,
+            link_type=link_type,
+            local_interface=interface_a, local_port=port_a,
+            remote_interface=interface_b, remote_port=port_b)
+        ClientRegistry.send_link_update(interface_a.peering_client.asys.asn, update)
+
+        update = create_link_update(LinkUpdate.Type.CREATE,
+            link_type=link_type,
+            local_interface=interface_b, local_port=port_b,
+            remote_interface=interface_a, remote_port=port_a)
+        ClientRegistry.send_link_update(interface_b.peering_client.asys.asn, update)
+
+        return link
 
 
 class Link(models.Model):
@@ -291,6 +349,8 @@ class Link(models.Model):
                 name="different_interfaces")
         ]
 
+    objects = LinkManager()
+
     def __str__(self):
         if self.link_type == self.Type.CORE:
             return "Core Link (%s) <-> (%s)" % (self.interface_a, self.interface_b)
@@ -306,3 +366,25 @@ class Link(models.Model):
     def clean(self):
         if self.interface_a.vlan != self.interface_b.vlan:
             raise ValidationError("Interfaces are from different VLANS.", code='different_vlans')
+
+
+@receiver(models.signals.post_delete, sender=Link)
+def delete_link_hook(sender, instance, using, **kwargs):
+    from peering_coord.api.client_connection import (ClientRegistry,
+                                                     create_link_update)
+
+    update = create_link_update(LinkUpdate.Type.DESTROY,
+        link_type=instance.link_type,
+        local_interface=instance.interface_a,
+        local_port=instance.port_a,
+        remote_interface=instance.interface_b,
+        remote_port=instance.port_b)
+    ClientRegistry.send_link_update(instance.interface_a.peering_client.asys.asn, update)
+
+    update = create_link_update(LinkUpdate.Type.DESTROY,
+        link_type=instance.link_type,
+        local_interface=instance.interface_b,
+        local_port=instance.port_b,
+        remote_interface=instance.interface_a,
+        remote_port=instance.port_a)
+    ClientRegistry.send_link_update(instance.interface_b.peering_client.asys.asn, update)

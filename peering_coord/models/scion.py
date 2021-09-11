@@ -92,7 +92,7 @@ class AS(models.Model):
             pc.get_connected_vlans() for pc in self.peering_clients.all())
 
     def query_interfaces(self):
-        """Returns a queryset containing all interfaces of this AS:"""
+        """Returns a queryset containing all interfaces of this AS."""
         return Interface.objects.filter(peering_client__in=self.peering_clients.all())
 
     def query_connected_peers(self, vlan: Optional[VLAN] = None):
@@ -117,6 +117,11 @@ class AS(models.Model):
         my_acpted = AcceptedPeer.objects.filter(vlan=vlan, asys=self).values_list('peer')
         mutually_acpted= AcceptedPeer.objects.filter(vlan=vlan, asys__in=my_acpted.all(), peer=self)
         return mutually_acpted.values_list('asys')
+
+    def count_connected_clients(self) -> int:
+        """Returns the number of active peering clients."""
+        from peering_coord.api.client_connection import ClientRegistry
+        return len(ClientRegistry.get_clients(self.asn) or[])
 
 
 class AcceptedPeer(models.Model):

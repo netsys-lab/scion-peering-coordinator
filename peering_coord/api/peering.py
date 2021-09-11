@@ -1,22 +1,29 @@
-"""Peering API"""
+"""Implementation of the gRPC peering coordination service."""
 
 import io
+import ipaddress
+import threading
 import typing
 from typing import Optional, Tuple
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
 from rest_framework import serializers
-from django_grpc_framework.services import Service
+
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
+from django_grpc_framework.services import Service
 
+from peering_coord import peering_policy
 from peering_coord.api import peering_pb2
 from peering_coord.api.authentication import get_client_from_metadata
+from peering_coord.api.client_connection import (
+    ClientConnections, ClientRegistry, create_link_update)
 from peering_coord.api.serializers import PolicyProtoSerializer
-from peering_coord.models.ixp import VLAN
+from peering_coord.models.ixp import VLAN, Interface, PeeringClient
 from peering_coord.models.policies import (
-    DefaultPolicy, AsPeerPolicy, IsdPeerPolicy, OwnerPeerPolicy)
+    AsPeerPolicy, DefaultPolicy, IsdPeerPolicy, OwnerPeerPolicy)
+from peering_coord.models.scion import AS
 from peering_coord.scion_addr import ASN
 
 
@@ -26,20 +33,108 @@ class TransactionRollback(Exception):
 
 class PeeringService(Service):
 
-    # TODO: Persistent channel for link updates
-    # def StreamChannel(self, request_iterator, context):
-    #     pass
+    def StreamChannel(self, request_iterator, context):
+        """Server side of the persistent bidirectional gRPC stream peering clients maintain with the
+        coordinator.
+
+        Since bidirectional gRPC streams in Python use blocking generators for sending and
+        receiving, an additional thread just for reading request from the stream is created for
+        every connection. The request listener threads forwards received requests to the main thread
+        handling the connection via the associated ClientConnection object.
+        """
+        asn, client_name = get_client_from_metadata(context.invocation_metadata())
+        asn = ASN(asn)
+
+        # Register the connection
+        try:
+            conn = ClientRegistry.createConnection(asn, client_name)
+        except KeyError as e:
+            context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+        except ClientConnections.AlreadyConnected as e:
+            context.abort(grpc.StatusCode.ALREADY_EXISTS, str(e))
+        except:
+            context.abort(grpc.StatusCode.INTERNAL, "Internal error")
+
+        # Enqueue link create messages for all existing links.
+        client = PeeringClient.objects.get(asys__asn=asn, name=client_name)
+        for interface in Interface.objects.filter(peering_client=client).all():
+            for link in interface.query_links().all():
+                if link.interface_a == interface:
+                    update = create_link_update(peering_pb2.LinkUpdate.Type.CREATE,
+                        link_type=link.link_type,
+                        local_interface=link.interface_a, local_port=link.port_a,
+                        remote_interface=link.interface_b, remote_port=link.port_b)
+                else:
+                    update = create_link_update(peering_pb2.LinkUpdate.Type.CREATE,
+                        link_type=link.link_type,
+                        local_interface=link.interface_b, local_port=link.port_b,
+                        remote_interface=link.interface_a, remote_port=link.port_a)
+                conn.send_link_update(update)
+
+        # Launch a new thread to listen for requests from the client.
+        def stream_listener():
+            for request in request_iterator:
+                conn.stream_request_received(request)
+            conn.request_stream_closed()
+        listener = threading.Thread(
+            target=stream_listener,
+            name="gRPC stream listener for {}-{}".format(asn, client_name))
+        listener.start()
+
+        # Run the event loop to process requests and generate responses.
+        for response in conn.run():
+            yield response
+
+        ClientRegistry.destroyConnection(conn)
+        listener.join()
+
+    @transaction.atomic
+    def SetPortRange(self, request, context):
+        """Set the UDP port range used for SCION underlay connections."""
+        asn_str, _ = get_client_from_metadata(context.invocation_metadata())
+        asn = ASN(asn_str)
+
+        # Validate arguments and retrieve the interface
+        try:
+            vlan = VLAN.objects.get(name=request.interface_vlan)
+        except VLAN.DoesNotExist:
+            context.abort(grpc.StatusCode.NOT_FOUND, "VLAN does not exist")
+        try:
+            ip = ipaddress.ip_address(request.interface_ip)
+        except ValueError:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Invalid IP address")
+        try:
+            interface = Interface.objects.get(vlan=vlan, public_ip=ip)
+        except (Interface.DoesNotExist, Interface.MultipleObjectsReturned):
+            context.abort(grpc.StatusCode.NOT_FOUND, "Interface not found")
+
+        recreate_links = not (request.first_port <= interface.first_port
+                          and request.last_port >= interface.last_port)
+
+        try:
+            interface.first_port = request.first_port
+            interface.last_port = request.last_port
+            interface.save()
+        except ValidationError:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Invalid port range")
+
+        if recreate_links:
+            # Recreate the interface's links with the new ports
+            for link in interface.query_links().all():
+                link.delete()
+            peering_policy.update_links(vlan, AS.objects.get(asn=asn))
 
     @transaction.atomic
     def ListPolicies(self, request, context):
         """List policies of the AS making the request."""
-        my_asn, client = get_client_from_metadata(context.invocation_metadata())
+        asn_str, client = get_client_from_metadata(context.invocation_metadata())
+        asn = ASN(asn_str)
 
         # Prepare common selection criteria
-        common_selection = {'asys__asn': ASN(my_asn)}
+        common_selection = {'asys__asn': asn}
         if request.vlan:
             common_selection['vlan__name'] = request.vlan
-        if request.asn and request.asn != my_asn:
+        if request.asn and request.asn != asn_str:
             context.abort(grpc.StatusCode.PERMISSION_DENIED, "Cannot list policies of other ASes")
         if request.WhichOneof("accept_") is not None:
             common_selection['accept'] = request.accept
@@ -82,9 +177,10 @@ class PeeringService(Service):
     @transaction.atomic
     def CreatePolicy(self, request, context):
         """Create a new policy."""
-        my_asn, client = get_client_from_metadata(context.invocation_metadata())
+        asn_str, client = get_client_from_metadata(context.invocation_metadata())
+        asn = ASN(asn_str)
 
-        if request.asn != my_asn:
+        if request.asn != asn_str:
             context.abort(grpc.StatusCode.PERMISSION_DENIED,
                 "Cannot create policies for other ASes")
 
@@ -93,20 +189,27 @@ class PeeringService(Service):
             context.abort(
                 grpc.StatusCode.INVALID_ARGUMENT, _fmt_validation_errors(serializer.errors))
 
+        _assert_policy_write_permission(context, asn, client, request.vlan)
+
         try:
-            serializer.save()
+            policy = serializer.save()
         except ValidationError as e:
             msg, code = _translate_validation_errors(e)
             context.abort(code, msg)
+
+        # Update links and notify clients
+        peering_policy.update_accepted_peers(policy.vlan, policy.asys)
+        peering_policy.update_links(policy.vlan, policy.asys)
 
         return serializer.message
 
     @transaction.atomic
     def DestroyPolicy(self, request, context):
         """Delete a policy."""
-        my_asn, client = get_client_from_metadata(context.invocation_metadata())
+        asn_str, client = get_client_from_metadata(context.invocation_metadata())
+        asn = ASN(asn_str)
 
-        if request.asn != my_asn:
+        if request.asn != asn_str:
             context.abort(grpc.StatusCode.PERMISSION_DENIED,
                 "Cannot delete policies of other ASes")
 
@@ -119,7 +222,13 @@ class PeeringService(Service):
         except ObjectDoesNotExist:
             context.abort(grpc.StatusCode.NOT_FOUND, "Policy does not exist")
 
+        _assert_policy_write_permission(context, asn, client, request.vlan)
         policy.delete()
+
+        # Update links and notify clients
+        peering_policy.update_accepted_peers(policy.vlan, policy.asys)
+        peering_policy.update_links(policy.vlan, policy.asys)
+
         return Empty()
 
     def SetPolicies(self, request, context):
@@ -146,16 +255,20 @@ class PeeringService(Service):
         # Returns the unsuccessful policies and matching error descriptions.
         # context.abort() is called on fatal errors to abort the RPC and trigger a transaction
         # rollback.
-        my_asn, client= get_client_from_metadata(context.invocation_metadata())
+        asn_str, client= get_client_from_metadata(context.invocation_metadata())
+        asn = ASN(asn_str)
 
         # Delete previous policies
         if request.vlan:
             try:
-                _delete_policies(ASN(my_asn), VLAN.objects.get(name=request.vlan).id)
+                vlan_id = VLAN.objects.get(name=request.vlan).id
             except VLAN.DoesNotExist:
                 context.abort(grpc.StatusCode.NOT_FOUND, "VLAN does not exist")
+                _assert_policy_write_permission(context, asn, client, request.vlan)
+            _delete_policies(asn, vlan_id)
         else:
-            _delete_policies(ASN(my_asn))
+            _assert_policy_write_permission(context, asn, client)
+            _delete_policies(asn)
 
         # Create new policies
         rejected_policies = []
@@ -163,7 +276,7 @@ class PeeringService(Service):
         for policy in request.policies:
             serializer = PolicyProtoSerializer(message=policy)
 
-            if policy.asn != my_asn:
+            if policy.asn != asn_str:
                 rejected_policies.append(policy)
                 errors.append("Policy ASN belongs to foreign AS")
                 continue
@@ -185,6 +298,12 @@ class PeeringService(Service):
                 rejected_policies.append(policy)
                 errors.append(msg)
                 continue
+
+        # Update links and notify clients
+        asys = AS.objects.get(asn=asn)
+        for vlan in asys.get_connected_vlans():
+            peering_policy.update_accepted_peers(vlan, asys)
+            peering_policy.update_links(vlan, asys)
 
         return rejected_policies, errors
 
@@ -229,3 +348,20 @@ def _translate_validation_errors(validation_error: ValidationError) -> Tuple[str
         code = grpc.StatusCode.INVALID_ARGUMENT
 
     return msg.getvalue(), code
+
+
+def _assert_policy_write_permission(context, asn: ASN, client: str, vlan: Optional[str] = None):
+    """Helper function for checking whether a client is allowed to alter the pering policies.
+    Triggers an exception to abort the RPC if the client does not have sufficient permissions.
+
+    :param context: gRPC service context
+    :param asn: AS the client belongs to.
+    :param client: Peering client name.
+    :param vlan: VLAN for which write permissions are checked. If None, checks if the client has
+                 write access to every VLAN.
+    """
+    try:
+        if not ClientRegistry.has_policy_write_permissions(asn, client, vlan):
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, "Insufficient permissions")
+    except:
+        context.abort(grpc.StatusCode.PERMISSION_DENIED, "Insufficient permissions")

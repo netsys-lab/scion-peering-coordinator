@@ -62,7 +62,7 @@
 <table class="fancy-table">
   <tr>
     <th>Name</th>
-    <th>Status</th>
+    <th>Connected</th>
     {% if user|has_access:asys %}
       <th>API Secret</th>
     {% endif %}
@@ -70,7 +70,7 @@
   {% for pc in asys.peering_clients.all %}
     <tr>
       <td>{{ pc.name }}</td>
-      <td>TODO</td>
+      <td>{{ pc.is_connected }}</td>
       {% if user|has_access:asys %}
         <td id="{{ pc.name }}-secret">
           <button type="button" onclick="show_secret('{{ pc.name }}')">Show</button>

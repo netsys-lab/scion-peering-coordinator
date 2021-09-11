@@ -1,8 +1,6 @@
-"""Django settings for development with the postgres backend.
-"""
+"""Django settings for development with the postgres backend."""
 
 import os
-import redis
 from .devel_common import *
 
 
@@ -21,24 +19,5 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
         'USER': os.environ.get('POSTGRES_USER', 'peering_coord'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'peering_coord')
-    }
-}
-
-######################
-### Huey Task Queue ##
-######################
-
-HUEY = {
-    'huey_class': 'huey.RedisHuey',
-    'name': 'peering-coord',
-    'immediate': False,
-    'connection': {
-        'connection_pool': redis.ConnectionPool(
-            host='redis',
-            port=6379
-        )
-    },
-    'consumer': {
-        'workers': 2
     }
 }

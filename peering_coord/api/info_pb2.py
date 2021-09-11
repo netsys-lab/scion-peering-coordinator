@@ -17,9 +17,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='peering_coord/api/info.proto',
   package='coord.api',
   syntax='proto3',
-  serialized_options=b'Z7github.com/netsys-lab/scion-peering-client/daemon/coord',
+  serialized_options=b'Z6github.com/netsys-lab/scion-peering-coordinator/go/api',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1cpeering_coord/api/info.proto\x12\tcoord.api\"6\n\x05Owner\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tlong_name\x18\x02 \x01(\t\x12\x0c\n\x04\x61sns\x18\x03 \x03(\t\",\n\x0fGetOwnerRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03\x61sn\x18\x02 \x01(\t\"\'\n\x12SearchOwnerRequest\x12\x11\n\tlong_name\x18\x01 \x01(\t2\x86\x01\n\x04Info\x12:\n\x08GetOwner\x12\x1a.coord.api.GetOwnerRequest\x1a\x10.coord.api.Owner\"\x00\x12\x42\n\x0bSearchOwner\x12\x1d.coord.api.SearchOwnerRequest\x1a\x10.coord.api.Owner\"\x00\x30\x01\x42\x39Z7github.com/netsys-lab/scion-peering-client/daemon/coordb\x06proto3'
+  serialized_pb=b'\n\x1cpeering_coord/api/info.proto\x12\tcoord.api\"6\n\x05Owner\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tlong_name\x18\x02 \x01(\t\x12\x0c\n\x04\x61sns\x18\x03 \x03(\t\",\n\x0fGetOwnerRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03\x61sn\x18\x02 \x01(\t\"\'\n\x12SearchOwnerRequest\x12\x11\n\tlong_name\x18\x01 \x01(\t2\x86\x01\n\x04Info\x12:\n\x08GetOwner\x12\x1a.coord.api.GetOwnerRequest\x1a\x10.coord.api.Owner\"\x00\x12\x42\n\x0bSearchOwner\x12\x1d.coord.api.SearchOwnerRequest\x1a\x10.coord.api.Owner\"\x00\x30\x01\x42\x38Z6github.com/netsys-lab/scion-peering-coordinator/go/apib\x06proto3'
 )
 
 

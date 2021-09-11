@@ -4,12 +4,16 @@ package coord.api;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/netsys-lab/scion-peering-client/daemon/coord";
+option go_package = "github.com/netsys-lab/scion-peering-coordinator/go/api";
 
 
 // Peering API
 service Peering {
+  // Persistent channel for push-notifications from the coordinator to the clients.
   rpc StreamChannel(stream StreamMessageRequest) returns (stream StreamMessageResponse) {}
+
+  // Set the UDP port range used for SCION overlay connections.
+  rpc SetPortRange(PortRange) returns (google.protobuf.Empty) {}
 
   // List policies of the AS making the request.
   rpc ListPolicies(ListPolicyRequest) returns (stream Policy) {}
@@ -39,27 +43,26 @@ message StreamMessageResponse {
   oneof response {
     ArbitrationUpdate arbitration = 1;
     LinkUpdate link_update = 2;
+    AsyncError error = 3;
   }
 }
 
-// Send by the client to the coordinator to initiate selection of the primary client. The
-// coordinator selects the client with the highest election_id as primary. If the client that sent
-// the arbitration update request has become primary, the coordinator returns an ArbitrationUpdate
-// message with status set to zero (PRIMARY). Otherwise a status not equal to zero is returned.
-// When the primary client changes, all non-primary clients are notified by an ArbitrationUpdate
-// with status not qual to zero. The newly selected primary client gets an ArbitrationUpdate
-// with status zero (PRIMARY).
+// Used for requesting write permissions to the ASes peering policies. Since policies are AS wide,
+// only one client (the primary client) is granted write permissions at any point in time.
+// The primary client can be different for different VLANs.
+// The coordinator uses the same message to notify clients whenever the primary client changes.
 message ArbitrationUpdate {
   // VLAN for which the client registers itself as potential primary client. If no VLAN is given
   // the client can be primary for all VLANs.
+  // When the message is send from the coordinator this field is always set.
   oneof vlan_ { string vlan = 1; }
   // The client with the highest election_id becomes primary. If multiple clients use the same
-  // election_id, the first arbitration update wins.
+  // election_id is is unspecified which one becomes primary.
   int64 election_id = 2;
   enum Status {
-    PRIMARY = 0;
-    NOT_PRIMARY = 1;
-    ERROR = 2;
+    ERROR = 0;
+    PRIMARY = 1;
+    NOT_PRIMARY = 2;
   }
   // Ignored on requests. The coordinator sets status on replies to indicated whether the client is
   // primary or not.
@@ -90,12 +93,33 @@ message LinkUpdate {
   UnderlayAddress remote = 5;
 }
 
+// Notifies the client of abnormal status conditions concerning its links or policies.
+message AsyncError {
+  enum Code {
+    UNSPECIFIED = 0;
+    LINK_CREATION_FAILED = 1;
+  }
+  Code code = 1;
+  string message = 2;
+}
+
 // Endpoint in the IP/UDP underlay.
 message UnderlayAddress {
   // Underlay IPv4/IPv6 address.
   string ip = 1;
   // Underlay UDP port.
   uint32 port = 2;
+}
+
+message PortRange {
+  // VLAN of the interface the range applies to.
+  string interface_vlan = 1;
+  // IP of the interface the range applies to.
+  string interface_ip = 2;
+  // First UDP port to assign to SCION links.
+  uint32 first_port = 3;
+  // One past the last UDP port to assign to SCION links.
+  uint32 last_port = 4;
 }
 
 message ListPolicyRequest {
