@@ -56,37 +56,46 @@ class PeeringService(Service):
             context.abort(grpc.StatusCode.INTERNAL, "Internal error")
 
         # Enqueue link create messages for all existing links.
-        client = PeeringClient.objects.get(asys__asn=asn, name=client_name)
-        for interface in Interface.objects.filter(peering_client=client).all():
-            for link in interface.query_links().all():
-                if link.interface_a == interface:
-                    update = create_link_update(peering_pb2.LinkUpdate.Type.CREATE,
-                        link_type=link.link_type,
-                        local_interface=link.interface_a, local_port=link.port_a,
-                        remote_interface=link.interface_b, remote_port=link.port_b)
-                else:
-                    update = create_link_update(peering_pb2.LinkUpdate.Type.CREATE,
-                        link_type=link.link_type,
-                        local_interface=link.interface_b, local_port=link.port_b,
-                        remote_interface=link.interface_a, remote_port=link.port_a)
-                conn.send_link_update(update)
+        try:
+            client = PeeringClient.objects.get(asys__asn=asn, name=client_name)
+            for interface in Interface.objects.filter(peering_client=client).all():
+                for link in interface.query_links().all():
+                    if link.interface_a == interface:
+                        update = create_link_update(peering_pb2.LinkUpdate.Type.CREATE,
+                            link_type=link.link_type,
+                            local_interface=link.interface_a, local_port=link.port_a,
+                            remote_interface=link.interface_b, remote_port=link.port_b)
+                    else:
+                        update = create_link_update(peering_pb2.LinkUpdate.Type.CREATE,
+                            link_type=link.link_type,
+                            local_interface=link.interface_b, local_port=link.port_b,
+                            remote_interface=link.interface_a, remote_port=link.port_a)
+                    conn.send_link_update(update)
+        except:
+            ClientRegistry.destroyConnection(conn)
+            raise
 
         # Launch a new thread to listen for requests from the client.
         def stream_listener():
-            for request in request_iterator:
-                conn.stream_request_received(request)
-            conn.request_stream_closed()
+            try:
+                for request in request_iterator:
+                    conn.stream_request_received(request)
+            except grpc.RpcError:
+                pass
+            finally:
+                conn.request_stream_closed()
         listener = threading.Thread(
             target=stream_listener,
             name="gRPC stream listener for {}-{}".format(asn, client_name))
         listener.start()
 
         # Run the event loop to process requests and generate responses.
-        for response in conn.run():
-            yield response
-
-        ClientRegistry.destroyConnection(conn)
-        listener.join()
+        try:
+            for response in conn.run():
+                yield response
+        finally:
+            ClientRegistry.destroyConnection(conn)
+            listener.join()
 
     @transaction.atomic
     def SetPortRange(self, request, context):
@@ -123,6 +132,8 @@ class PeeringService(Service):
             for link in interface.query_links().all():
                 link.delete()
             peering_policy.update_links(vlan, AS.objects.get(asn=asn))
+
+        return peering_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
     @transaction.atomic
     def ListPolicies(self, request, context):
@@ -314,6 +325,7 @@ def _delete_policies(asn: ASN, vlan_id: Optional[int] = None):
     if vlan_id is not None:
         filter['vlan__id'] = vlan_id
 
+    DefaultPolicy.objects.filter(**filter).delete()
     AsPeerPolicy.objects.filter(**filter).delete()
     OwnerPeerPolicy.objects.filter(**filter).delete()
     IsdPeerPolicy.objects.filter(**filter).delete()

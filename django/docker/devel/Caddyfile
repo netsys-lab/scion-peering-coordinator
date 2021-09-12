@@ -6,3 +6,6 @@
 	root * /var/www/peering-coord
 	file_server
 }
+:50051 {
+	reverse_proxy grpcserver:50051
+}

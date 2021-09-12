@@ -4,7 +4,6 @@ from django.template.defaulttags import register
 @register.filter
 def get_item(dict, key):
     """Get an item from a mapping."""
-    print(type(dict), dict)
     return dict.get(key)
 
 

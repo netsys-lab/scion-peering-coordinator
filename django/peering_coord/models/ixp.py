@@ -35,7 +35,7 @@ class Owner(models.Model):
     )
     users = models.ManyToManyField(
         User,
-        help_text="User accounts with access to this entities ASes."
+        help_text="User accounts with access to this entity's ASes."
     )
 
     def __str__(self):

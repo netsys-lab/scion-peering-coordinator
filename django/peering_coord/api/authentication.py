@@ -5,6 +5,7 @@ from typing import Tuple
 import grpc
 
 from peering_coord.models.ixp import PeeringClient
+from peering_coord.models.limits import API_TOKEN_BYTES
 from peering_coord.scion_addr import ASN
 
 
@@ -50,6 +51,8 @@ class TokenValidationInterceptor(grpc.ServerInterceptor):
         try:
             query = PeeringClient.objects.values_list('secret_token', flat=True)
             token = query.get(asys__asn=ASN(asn), name=client)
+            if len(token) < 2 * API_TOKEN_BYTES:
+                return self._abortion
         except ValueError:
             return self._abortion
         except PeeringClient.DoesNotExist:

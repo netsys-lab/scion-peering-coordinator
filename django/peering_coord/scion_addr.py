@@ -36,7 +36,7 @@ class ASN:
                         raise ValueError("Invalid hexadecimal ASN. (Invalid group value)")
                     self.asn_int |= group_value
             else:
-                raise ValueError("Invalid ASN. (Wrong number of colon separated groups)")
+                raise ValueError("Invalid ASN. (Wrong number of colon-separated groups)")
         else:
             raise ValueError("Invalid initializer type for ASN.")
 
@@ -57,6 +57,13 @@ class ASN:
 
     def __repr__(self):
         return 'ASN("%s")' % self.__str__()
+
+    @classmethod
+    def from_bytes(cls, bytes) -> 'ASN':
+        return ASN(int.from_bytes(bytes[:cls.BITS // 8], byteorder='big'))
+
+    def to_bytes(self) -> bytes:
+        return self.asn_int.to_bytes(self.BITS // 8, byteorder='big')
 
     def __eq__(self, other):
         if type(self) != type(other):
