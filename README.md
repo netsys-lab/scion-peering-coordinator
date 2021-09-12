@@ -9,7 +9,7 @@ Dependencies
 ------------
 Install the Python dependencies by running (preferably in a venv)
 ```bash
-pip3 install -r requirements.txt
+pip3 install --require-hashes -r django/requirements.txt
 ```
 
 Development
@@ -17,6 +17,7 @@ Development
 
 ### Tests
 ```bash
+cd django
 ./manage.py makemigrations
 ./manage.py migrate
 ./manage.py test
@@ -24,6 +25,7 @@ Development
 
 ### Running the development server
 ```bash
+cd django
 ./manage.py runserver 127.0.0.1:8000            # first terminal
 ./manage.py grpcrunserver --dev 127.0.0.1:50051 # second terminal
 ```
@@ -32,8 +34,8 @@ Development
 Docker and docker-compose must be installed.
 
 ```bash
-cd docker/devel
+cd django/docker/devel
 docker-compose up
 ```
 Main web interface is at http://localhost:8000
-Admin interface is at http://localhost:8000/admin (username: admin, password: admin).
+Admin interface is at http://localhost:8000/admin (username: admin, password: admin)
