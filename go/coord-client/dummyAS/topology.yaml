@@ -1,0 +1,55 @@
+{
+  "attributes": [
+    "authoritative",
+    "core",
+    "issuing",
+    "voting"
+  ],
+  "isd_as": "1-ff00:0:1",
+  "mtu": 1472,
+  "control_service": {
+    "cs1-ff00_0_1-1": {
+      "addr": "127.0.0.19:31000"
+    }
+  },
+  "discovery_service": {
+    "cs1-ff00_0_1-1": {
+      "addr": "127.0.0.19:31000"
+    }
+  },
+  "border_routers": {
+    "br1-ff00_0_1-1": {
+      "ctrl_addr": "127.0.0.17:31002",
+      "internal_addr": "127.0.0.17:31004",
+      "interfaces": {
+        "960": {
+          "underlay": {
+            "public": "127.0.0.4:50000",
+            "remote": "127.0.0.5:50000"
+          },
+          "bandwidth": 1000,
+          "isd_as": "1-ff00:0:2",
+          "link_to": "CHILD",
+          "mtu": 1280
+        }
+      }
+    },
+    "br1-ff00_0_1-2": {
+      "ctrl_addr": "127.0.0.18:31006",
+      "internal_addr": "127.0.0.18:31008",
+      "interfaces": {
+        "3": {
+          "underlay": {
+            "public": "127.0.0.6:50000",
+            "remote": "127.0.0.7:50000"
+          },
+          "bandwidth": 1000,
+          "isd_as": "1-ff00:0:3",
+          "link_to": "CHILD",
+          "mtu": 1280
+        }
+      }
+    }
+  },
+  "colibri_service": {}
+}

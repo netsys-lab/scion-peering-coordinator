@@ -1,0 +1,4 @@
+- {vlan: prod, accept: false}
+- {vlan: prod, accept: true, peerAsn: ff00:0:2}
+- {vlan: prod, accept: true, peerOwner: user2}
+- {vlan: prod, accept: true, peerIsd: 2}

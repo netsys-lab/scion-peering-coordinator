@@ -1,0 +1,17 @@
+asn: ff00:0:1
+asConfigPath: "dummyAS"
+asConfigScript: "dummyAS/load_config.sh"
+asConfigDelay: 5
+ctrlSocket: ""
+connections:
+  - coord: "127.0.0.1:50051"
+    clientName: "default"
+    secret: d0ff6bfde98cf9c30db93d9e95c94733
+    policies: "dummyAS/policies.yaml"
+    interfaces:
+      - vlan: prod
+        ip: "10.0.0.2"
+        firstPort: 50000
+        lastPort: 51000
+        firstLinkId: 1000
+        lastLinkId: 2000
