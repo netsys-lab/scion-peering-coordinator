@@ -142,7 +142,7 @@
     {% for policy in owner_policies %}
       <tr>
         <td>{{ policy.vlan.long_name }}</td>
-        <td><a href="{% url 'owner_details' asys.owner.name %}">{{ policy.peer_owner }}</a></td>
+        <td><a href="{% url 'owner_details' policy.peer_owner.name %}">{{ policy.peer_owner }}</a></td>
         <td>{{ policy.accept }}</td>
       </tr>
     {% endfor %}
@@ -154,7 +154,7 @@
     {% for policy in as_policies %}
       <tr>
         <td>{{ policy.vlan.long_name }}</td>
-        <td><a href="{% url 'as_details' asys.asn|url_format_asn %}">{{ policy.peer_as }}</a></td>
+        <td><a href="{% url 'as_details' policy.peer_as.asn|url_format_asn %}">{{ policy.peer_as }}</a></td>
         <td>{{ policy.accept }}</td></tr>
     {% endfor %}
   </table>
