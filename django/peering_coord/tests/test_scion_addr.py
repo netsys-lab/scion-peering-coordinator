@@ -27,7 +27,7 @@ class AsnTest(PythonTestCase):
             ASN(str(2**32))
         with self.assertRaisesRegex(ValueError, r"^Invalid hexadecimal ASN"):
             ASN("ffff:fffff:ffff")
-        with self.assertRaisesRegex(ValueError, r"Wrong number of colon separated groups"):
+        with self.assertRaisesRegex(ValueError, r"Wrong number of colon-separated groups"):
             ASN("ff:ff:ff:ff:ff:ff")
 
     def test_asn_deparsing(self):
