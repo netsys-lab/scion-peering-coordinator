@@ -14,7 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
 from django_grpc_framework.services import Service
 
-from peering_coord import peering_policy
+from peering_coord import policy_resolver
 from peering_coord.api import peering_pb2
 from peering_coord.api.authentication import get_client_from_metadata
 from peering_coord.api.client_connection import (
@@ -131,7 +131,7 @@ class PeeringService(Service):
             # Recreate the interface's links with the new ports
             for link in interface.query_links().all():
                 link.delete()
-            peering_policy.update_links(vlan, AS.objects.get(asn=asn))
+            policy_resolver.update_links(vlan, AS.objects.get(asn=asn))
 
         return peering_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
@@ -209,8 +209,8 @@ class PeeringService(Service):
             context.abort(code, msg)
 
         # Update links and notify clients
-        peering_policy.update_accepted_peers(policy.vlan, policy.asys)
-        peering_policy.update_links(policy.vlan, policy.asys)
+        policy_resolver.update_accepted_peers(policy.vlan, policy.asys)
+        policy_resolver.update_links(policy.vlan, policy.asys)
 
         return serializer.message
 
@@ -237,8 +237,8 @@ class PeeringService(Service):
         policy.delete()
 
         # Update links and notify clients
-        peering_policy.update_accepted_peers(policy.vlan, policy.asys)
-        peering_policy.update_links(policy.vlan, policy.asys)
+        policy_resolver.update_accepted_peers(policy.vlan, policy.asys)
+        policy_resolver.update_links(policy.vlan, policy.asys)
 
         return Empty()
 
@@ -313,8 +313,8 @@ class PeeringService(Service):
         # Update links and notify clients
         asys = AS.objects.get(asn=asn)
         for vlan in asys.get_connected_vlans():
-            peering_policy.update_accepted_peers(vlan, asys)
-            peering_policy.update_links(vlan, asys)
+            policy_resolver.update_accepted_peers(vlan, asys)
+            policy_resolver.update_links(vlan, asys)
 
         return rejected_policies, errors
 

@@ -7,7 +7,7 @@ from peering_coord.models.ixp import Owner, VLAN, PeeringClient, Interface
 from peering_coord.models.scion import ISD, AS, Link
 from peering_coord.models.policies import (DefaultPolicy, AsPeerPolicy, DefaultPolicy,
     IsdPeerPolicy, OwnerPeerPolicy)
-from peering_coord.peering_policy import update_accepted_peers, update_links
+from peering_coord.policy_resolver import update_accepted_peers, update_links
 from peering_coord.scion_addr import ASN
 
 

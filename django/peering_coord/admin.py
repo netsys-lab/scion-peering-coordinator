@@ -1,12 +1,12 @@
-from django.core.exceptions import ValidationError
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
+from django.core.exceptions import ValidationError
 
-from peering_coord.models.ixp import Owner, VLAN, PeeringClient, Interface
-from peering_coord.models.scion import ISD, AS, VLAN, Link
-from peering_coord.models.policies import (DefaultPolicy,
-    AsPeerPolicy, IsdPeerPolicy, OwnerPeerPolicy)
-from peering_coord.peering_policy import update_accepted_peers
+from peering_coord import policy_resolver
+from peering_coord.models.ixp import VLAN, Interface, Owner, PeeringClient
+from peering_coord.models.policies import (
+    AsPeerPolicy, DefaultPolicy, IsdPeerPolicy, OwnerPeerPolicy)
+from peering_coord.models.scion import AS, ISD, VLAN, Link
 
 
 ################
@@ -76,12 +76,18 @@ class InterfaceAdminForm(forms.ModelForm):
         return cleaned_data
 
 
+def update_links(modeladmin, request, queryset):
+    for iface in queryset.all():
+        policy_resolver.update_links(iface.vlan, iface.peering_client.asys)
+
+
 @admin.register(Interface)
 class InterfaceAdmin(admin.ModelAdmin):
     form = InterfaceAdminForm
     list_display = ['peering_client', 'vlan', 'public_ip', 'first_port', 'last_port']
     list_filter = ['vlan']
     ordering = ['peering_client', 'vlan']
+    actions = [update_links]
 
 
 ##################
@@ -120,17 +126,17 @@ class LinkAdmin(admin.ModelAdmin):
 class PolicyAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        update_accepted_peers(obj.vlan, obj.asys)
+        policy_resolver.update_accepted_peers(obj.vlan, obj.asys)
 
     def delete_model(self, request, obj):
         super().delete_model(request, obj)
-        update_accepted_peers(obj.vlan, obj.asys)
+        policy_resolver.update_accepted_peers(obj.vlan, obj.asys)
 
     def delete_queryset(self, request, queryset):
         update = {(obj.vlan, obj.asys) for obj in queryset}
         super().delete_queryset(request, queryset)
         for vlan, asys in update:
-            update_accepted_peers(vlan, asys)
+            policy_resolver.update_accepted_peers(vlan, asys)
 
 
 @admin.register(DefaultPolicy)
